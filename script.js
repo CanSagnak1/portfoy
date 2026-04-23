@@ -21,7 +21,7 @@ class Particle {
     this.speedX = (Math.random() - 0.5) * 0.3;
     this.speedY = (Math.random() - 0.5) * 0.3;
     this.opacity = Math.random() * 0.5 + 0.1;
-    this.color = Math.random() > 0.5 ? '#6366f1' : '#22d3ee';
+    this.color = Math.random() > 0.5 ? '#f97316' : '#fbbf24';
   }
   update() {
     this.x += this.speedX;
@@ -64,7 +64,7 @@ function drawConnections() {
       if (dist < 120) {
         ctx.save();
         ctx.globalAlpha = (1 - dist / 120) * 0.12;
-        ctx.strokeStyle = '#6366f1';
+        ctx.strokeStyle = '#f97316';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(particles[i].x, particles[i].y);
