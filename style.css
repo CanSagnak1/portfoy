@@ -545,3 +545,103 @@ footer span { background: var(--gradient); -webkit-background-clip: text; -webki
   section { padding: 4rem 1.25rem; }
   .hero-btns { flex-direction: column; align-items: center; }
 }
+
+/* ── EASTER EGG ─────────────────────────────────────────── */
+#easter-egg-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#easter-egg-overlay.show {
+  animation: eggFadeInOut 3.8s ease forwards;
+}
+
+@keyframes eggFadeInOut {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.egg-backdrop {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center,
+    rgba(249,115,22,0.18) 0%,
+    rgba(251,191,36,0.10) 40%,
+    transparent 70%);
+  backdrop-filter: blur(2px);
+}
+
+.egg-card {
+  position: relative; z-index: 1;
+  padding: 2.5rem 3.5rem;
+  background: rgba(20,14,8,0.85);
+  border: 1px solid rgba(249,115,22,0.35);
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(249,115,22,0.25), 0 0 120px rgba(251,191,36,0.1);
+  animation: eggCardPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes eggCardPop {
+  from { transform: scale(0.6) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+
+.egg-hearts {
+  font-size: 2rem; letter-spacing: 0.25rem;
+  margin-bottom: 1rem;
+  animation: eggHeartBeat 0.8s ease infinite alternate;
+  display: block;
+}
+
+@keyframes eggHeartBeat {
+  from { transform: scale(1);    filter: brightness(1); }
+  to   { transform: scale(1.15); filter: brightness(1.3); }
+}
+
+.egg-text {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.3;
+  background: linear-gradient(135deg, #f97316, #fbbf24, #f97316);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: eggShimmer 1.5s linear infinite;
+}
+
+@keyframes eggShimmer {
+  from { background-position: 0% center; }
+  to   { background-position: 200% center; }
+}
+
+.egg-sub {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: rgba(251,191,36,0.7);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+/* floating hearts */
+.egg-float-heart {
+  position: absolute;
+  font-size: 1.4rem;
+  animation: floatUp 2.5s ease-out forwards;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+  100% { transform: translateY(-160px) scale(1.3); opacity: 0; }
+}
+
+/* avatar hint on hover */
+.about-avatar { cursor: pointer; }
+.about-avatar:active { transform: scale(0.96); }

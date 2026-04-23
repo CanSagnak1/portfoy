@@ -163,3 +163,88 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     this.reset();
   }, 3000);
 });
+
+// ── EASTER EGG ─────────────────────────────────────────────
+(function () {
+  const avatar = document.querySelector('.about-avatar');
+  if (!avatar) return;
+
+  let clickCount = 0;
+  let clickTimer = null;
+  let eggActive = false;
+
+  // Overlay'i oluştur (ilk seferinde)
+  function buildOverlay() {
+    if (document.getElementById('easter-egg-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'easter-egg-overlay';
+    overlay.innerHTML = `
+      <div class="egg-backdrop"></div>
+      <div class="egg-card">
+        <span class="egg-hearts">🧡 🤍 🧡</span>
+        <div class="egg-text">Berfin, seni çok seviyorum 🧡</div>
+        <div class="egg-sub">— Can 💛</div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  function spawnFloatingHearts(overlay) {
+    const emojis = ['🧡', '💛', '🤍', '🔥', '✨'];
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const h = document.createElement('span');
+        h.className = 'egg-float-heart';
+        h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        h.style.left = (Math.random() * 80 + 10) + '%';
+        h.style.top  = (Math.random() * 40 + 30) + '%';
+        h.style.animationDelay = '0s';
+        h.style.animationDuration = (1.8 + Math.random() * 1.2) + 's';
+        overlay.appendChild(h);
+        h.addEventListener('animationend', () => h.remove());
+      }, i * 160);
+    }
+  }
+
+  function triggerEasterEgg() {
+    if (eggActive) return;
+    eggActive = true;
+
+    buildOverlay();
+    const overlay = document.getElementById('easter-egg-overlay');
+
+    // Sıfırla ve yeniden başlat
+    overlay.classList.remove('show');
+    void overlay.offsetWidth; // reflow
+
+    overlay.classList.add('show');
+    spawnFloatingHearts(overlay);
+
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      eggActive = false;
+    }, 3800);
+  }
+
+  function handleTap(e) {
+    // touch olaylarında çift tetiklenmeyi önle
+    if (e.type === 'touchstart') e.preventDefault();
+
+    clickCount++;
+
+    if (clickCount === 1) {
+      clickTimer = setTimeout(() => {
+        clickCount = 0; // zaman aşımında sıfırla
+      }, 600);
+    }
+
+    if (clickCount >= 3) {
+      clearTimeout(clickTimer);
+      clickCount = 0;
+      triggerEasterEgg();
+    }
+  }
+
+  avatar.addEventListener('click',      handleTap);
+  avatar.addEventListener('touchstart', handleTap, { passive: false });
+})();
