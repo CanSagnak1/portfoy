@@ -230,7 +230,9 @@ h2.section-title {
   line-height: 1.2; margin-bottom: 0.75rem;
   letter-spacing: -0.5px;
 }
-h2.section-title span { color: var(--accent); }
+h2.section-title span { color: inherit; }
+h2.section-title .hl,
+h2.section-title span[style] { color: var(--accent); }
 
 .section-divider {
   width: 40px; height: 2px; background: var(--accent);
@@ -775,3 +777,14 @@ body.lang-en .screenshot-slot.placeholder::after { content: 'Soon'; }
 @media (max-width: 600px) {
   .screenshot-slot { width: 90px; height: 165px; }
 }
+
+/* ── DÜZELTMELER ─────────────────────────────────────────── */
+/* Hero badge: wrapper içinde double margin kaldır */
+.hero-badges .hero-badge { margin-bottom: 0; }
+
+/* Proje list items: flex korunmalı (block'a override edilmesin) */
+body.lang-en .project-highlights li.en-only { display: flex; }
+body.lang-en .project-highlights li.tr-only { display: none; }
+
+/* Kod bölümü: pre'de fazla padding kaldır */
+.code-body code { display: block; }
