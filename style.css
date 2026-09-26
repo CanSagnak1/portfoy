@@ -640,3 +640,138 @@ footer span { color: var(--accent); font-weight: 600; }
 /* avatar hint */
 .about-avatar { cursor: pointer; }
 .about-avatar:active { transform: scale(0.97); }
+
+/* ── HERO ENHANCEMENTS ───────────────────────────────────── */
+.hero-badges {
+  display: flex; gap: 0.6rem; flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.hero-hook {
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  animation: fadeUp 0.6s ease 0.42s both;
+  letter-spacing: -0.2px;
+}
+
+.hero-badge.available {
+  border-color: rgba(63,185,80,0.4);
+  color: var(--green-text);
+  background: rgba(35,134,54,0.12);
+}
+.hero-badge.available::before { background: var(--green-text); }
+
+/* ── LANG TOGGLE ─────────────────────────────────────────── */
+.lang-toggle {
+  display: flex; align-items: center; gap: 0.25rem;
+  margin-right: 0.75rem;
+}
+.lang-sep { color: var(--subtle); font-size: 0.7rem; user-select: none; }
+.lang-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.72rem; font-weight: 700; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.2rem 0.5rem; border-radius: var(--radius-xs);
+  transition: color 0.2s, background 0.2s; letter-spacing: 0.05em;
+}
+.lang-btn.active { color: var(--accent); background: var(--accent-dim); }
+.lang-btn:hover:not(.active) { color: var(--text); }
+
+/* ── LANGUAGE VISIBILITY CLASSES ─────────────────────────── */
+.en-only { display: none; }
+body.lang-en .tr-only { display: none; }
+body.lang-en .en-only { display: block; }
+.en-only-inline { display: none; }
+body.lang-en .tr-only-inline { display: none; }
+body.lang-en .en-only-inline { display: inline; }
+
+/* ── SCREENSHOT SHOWCASE ─────────────────────────────────── */
+.project-screenshots {
+  display: flex; gap: 0.6rem; margin-top: 1.5rem;
+  overflow-x: auto; padding-bottom: 0.4rem;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.project-screenshots::-webkit-scrollbar { height: 4px; }
+.project-screenshots::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.screenshot-slot {
+  flex-shrink: 0; width: 110px; height: 200px;
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); background: var(--surface);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 0.4rem;
+}
+.screenshot-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.screenshot-slot.placeholder::before { content: '📱'; font-size: 1.4rem; }
+.screenshot-slot.placeholder::after {
+  content: 'Yakında'; font-size: 0.6rem; color: var(--subtle);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+body.lang-en .screenshot-slot.placeholder::after { content: 'Soon'; }
+
+/* ── CODE SHOWCASE ───────────────────────────────────────── */
+#code { background: var(--bg2); }
+
+.code-block {
+  background: #0d1117; border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+
+.code-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+
+.code-dots { display: flex; gap: 5px; }
+.code-dots span { width: 11px; height: 11px; border-radius: 50%; }
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #ffbd2e; }
+.code-dots span:nth-child(3) { background: #28ca41; }
+
+.code-filename {
+  flex: 1; font-size: 0.78rem; color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.code-copy {
+  display: flex; align-items: center; gap: 0.35rem;
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius-xs); color: var(--muted);
+  font-size: 0.7rem; cursor: pointer; padding: 0.22rem 0.55rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: border-color 0.2s, color 0.2s;
+}
+.code-copy:hover { border-color: var(--accent); color: var(--accent); }
+.code-copy.copied { border-color: var(--green-text); color: var(--green-text); }
+
+.code-body {
+  padding: 1.5rem; overflow-x: auto;
+  font-size: 0.8rem; line-height: 1.85;
+  color: #e6edf3; font-family: 'JetBrains Mono', monospace; margin: 0;
+}
+
+.kw  { color: #ff7b72; }
+.ty  { color: #ffa657; }
+.fn  { color: #d2a8ff; }
+.cm  { color: #8b949e; font-style: italic; }
+.st  { color: #a5d6ff; }
+.nu  { color: #79c0ff; }
+
+.code-caption {
+  font-size: 0.82rem; color: var(--muted);
+  margin-top: 1rem; line-height: 1.7;
+}
+
+/* ── RESPONSIVE ADDITIONS ────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero-badges { justify-content: center; }
+  .lang-toggle { margin-right: 0; }
+}
+@media (max-width: 600px) {
+  .screenshot-slot { width: 90px; height: 165px; }
+}
