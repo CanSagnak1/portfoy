@@ -46,9 +46,10 @@ export function buildStrip({ lenSeg = 14, widSeg = 4, length = 1, widthFn, cupFn
 
 /** Kasımpatı "ray petal": altta tüp gibi dar, uca doğru açılan, ucu yuvarlak. */
 export function buildPetalGeometry(bend) {
-  const base = new THREE.Color('#8a0f5c');
-  const mid = new THREE.Color('#e03a8f');
-  const tip = new THREE.Color('#ffb8de');
+  // nötr gri-beyaz gradyan: gerçek renk, çiçek başına instance rengiyle verilir
+  const base = new THREE.Color().setRGB(0.32, 0.32, 0.32);
+  const mid = new THREE.Color().setRGB(0.72, 0.72, 0.72);
+  const tip = new THREE.Color().setRGB(1, 1, 1);
   return buildStrip({
     lenSeg: 14,
     widSeg: 4,
