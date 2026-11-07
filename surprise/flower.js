@@ -66,11 +66,35 @@ const stemCurve = new THREE.CatmullRomCurve3([
   new THREE.Vector3(0.02, -0.35, 0.22),
   new THREE.Vector3(0, 0, 0.18),
 ]);
-const TUBE_SEG = 80, TUBE_RAD = 8;
-const stemGeo = new THREE.TubeGeometry(stemCurve, TUBE_SEG, 0.032, TUBE_RAD, false);
-const stemIndexTotal = stemGeo.index.count;
-const stemMat = new THREE.MeshStandardMaterial({ color: '#2d6a3a', roughness: 0.6, metalness: 0.0 });
+const TUBE_SEG = 120, TUBE_RAD = 10;
+const stemGeo = new THREE.TubeGeometry(stemCurve, TUBE_SEG, 0.03, TUBE_RAD, false);
+// her halkanın merkezi (TubeGeometry getPointAt kullanır) -> shader'da incelme/büyüme için
+{
+  const uvA = stemGeo.attributes.uv;
+  const center = new Float32Array(uvA.count * 3);
+  const p = new THREE.Vector3();
+  for (let i = 0; i < uvA.count; i++) {
+    stemCurve.getPointAt(uvA.getX(i), p);
+    center.set([p.x, p.y, p.z], i * 3);
+  }
+  stemGeo.setAttribute('aCenter', new THREE.BufferAttribute(center, 3));
+}
+const stemU = { uG: { value: 0 }, uTip: { value: new THREE.Vector3(0, -2.7, 0) }, uTaper: { value: 0.12 } };
+const stemMat = new THREE.MeshStandardMaterial({ color: '#2d6a3a', roughness: 0.55, metalness: 0.0 });
+stemMat.onBeforeCompile = (sh) => {
+  Object.assign(sh.uniforms, stemU);
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', '#include <common>\nattribute vec3 aCenter;\nuniform float uG;\nuniform vec3 uTip;\nuniform float uTaper;')
+    .replace('#include <begin_vertex>', `
+      float sArc = uv.x;
+      float taperK = 1.0 - smoothstep(uG - uTaper, uG, sArc);
+      float thick = mix(1.45, 0.75, sArc);
+      vec3 transformed = aCenter + (position - aCenter) * taperK * thick;
+      if (sArc > uG) transformed = uTip;
+    `);
+};
 const stem = new THREE.Mesh(stemGeo, stemMat);
+stem.frustumCulled = false;
 scene.add(stem);
 
 // ---- yapraklar ----
@@ -85,9 +109,9 @@ const leaves = [];
   { s: 0.36, ang: 3.6, len: 0.85, pitch: 0.5 },
   { s: 0.52, ang: 2.0, len: 0.7, pitch: 0.7 },
   { s: 0.68, ang: 5.2, len: 0.55, pitch: 0.8 },
-].forEach((d, i) => {
+].forEach((d) => {
   const holder = new THREE.Group();
-  holder.position.copy(stemCurve.getPoint(d.s));
+  holder.position.copy(stemCurve.getPointAt(d.s));
   holder.rotation.order = 'YXZ';
   holder.rotation.set(d.pitch + 0.6, d.ang, 0);
   const m = new THREE.Mesh(leafGeo, leafMat);
@@ -95,12 +119,17 @@ const leaves = [];
   holder.scale.setScalar(0.0001);
   holder.visible = false;
   scene.add(holder);
-  leaves.push({ holder, s: d.s, len: d.len, start: 2.3 + i * 0.55 });
+  leaves.push({ holder, s: d.s, len: d.len, pitch: d.pitch, t0: null });
 });
 
 // ---- çiçek başı ----
 const head = new THREE.Group();
-head.rotation.x = 0.5;
+const UP = new THREE.Vector3(0, 1, 0);
+const tmpTan = new THREE.Vector3();
+const qTan = new THREE.Quaternion();
+const qFinal = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.5, 0, 0));
+head.quaternion.copy(qFinal);
+
 scene.add(head);
 
 const petalMat = new THREE.MeshPhysicalMaterial({
@@ -257,6 +286,7 @@ let nameShown = false, hintShown = false, handed = false;
 const dummy = new THREE.Object3D();
 dummy.rotation.order = 'YXZ';
 const tip = new THREE.Vector3();
+let camTipY = -2.6;
 const camPos = new THREE.Vector3(), camTarget = new THREE.Vector3(), tipPos = new THREE.Vector3();
 
 function frame(now) {
@@ -266,24 +296,32 @@ function frame(now) {
   if (running) t += dt;
   const tt = running ? t : -1;
 
-  // sap büyümesi
+  // sap büyümesi: uç shader'da pürüzsüz incelir, çiçek başı tam uçta durur
   const g = running ? sstep(T.stem0, T.stem1, t) : 0;
-  const rings = Math.max(1, Math.floor(g * TUBE_SEG));
-  stemGeo.setDrawRange(0, rings * TUBE_RAD * 6);
-  stemCurve.getPoint(Math.max(g, 0.001), tipPos);
+  const gg = Math.max(g, 0.0005);
+  stemCurve.getPointAt(gg, tipPos);
+  stemU.uG.value = gg;
+  stemU.uTip.value.copy(tipPos);
+  stemU.uTaper.value = 0.12 * (1 - sstep(0.85, 1, g)) + 0.0001;
   head.position.copy(tipPos);
   const swell = sstep(T.swell, T.swell + 2.5, tt);
   head.scale.setScalar(lerp(0.5, 1, swell));
-  const sway = Math.sin(now * 0.0006) * 0.025;
-  head.rotation.z = sway;
+  // başın yönü: büyürken sapın teğetini izler, açılırken kameraya doğru yatar
+  stemCurve.getTangentAt(gg, tmpTan);
+  qTan.setFromUnitVectors(UP, tmpTan);
+  head.quaternion.slerpQuaternions(qTan, qFinal, swell);
+  head.rotateZ(Math.sin(now * 0.0006) * 0.025);
 
-  // yapraklar
+  // yapraklar: sap o noktaya ulaşınca saptan kıvrılarak açılır
   leaves.forEach((l) => {
     const show = running && g > l.s;
     l.holder.visible = show;
     if (show) {
-      const p = easeOutBack(clamp01((t - l.start) / 1.6));
-      l.holder.scale.setScalar(Math.max(0.0001, l.len * p));
+      if (l.t0 === null) l.t0 = t;
+      const k = clamp01((t - l.t0) / 2.2);
+      const e = sstep(0, 1, k);
+      l.holder.scale.set(l.len * (0.25 + 0.75 * e), l.len * Math.max(0.001, e), l.len * (0.25 + 0.75 * e));
+      l.holder.rotation.x = l.pitch + 0.6 - (1 - easeOutBack(k)) * 1.0;
       l.holder.rotation.z = Math.sin(now * 0.0007 + l.s * 9) * 0.04;
     }
   });
@@ -362,14 +400,15 @@ function frame(now) {
   ground.material.opacity = running ? 0.35 * sstep(0, 2, t) : 0.25;
 
   // kamera
+  camTipY += (tipPos.y - camTipY) * (1 - Math.exp(-dt * 4));
   if (!handed) {
     if (!running) {
       camera.position.set(Math.sin(now * 0.0002) * 0.3, -2.3, 5.5);
       camera.lookAt(0, -2.4, 0);
     } else {
       // faz A: sapı takip et
-      const aPos = camPos.set(Math.sin(t * 0.18) * 0.8, tipPos.y + 0.1, 5.2);
-      const aTar = camTarget.set(0, tipPos.y - 0.1, 0);
+      const aPos = camPos.set(Math.sin(t * 0.18) * 0.8, camTipY + 0.1, 5.2);
+      const aTar = camTarget.set(0, camTipY - 0.1, 0);
       const s = sstep(T.bloom - 0.5, T.handoff, t);
       const ang = (t - 5) * 0.1;
       const fx = Math.sin(ang) * finalDist, fz = Math.cos(ang) * finalDist;
